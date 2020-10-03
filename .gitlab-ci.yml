@@ -1,0 +1,154 @@
+stages:
+  - preparation
+  - building
+  - testing
+  - security
+
+image: edbizarro/gitlab-ci-pipeline-php:7.4
+
+# Variables
+variables:
+  MYSQL_ROOT_PASSWORD: root
+  MYSQL_USER: mysql_user
+  MYSQL_PASSWORD: mysql_password
+  MYSQL_DATABASE: mysql_db
+  DB_HOST: mysql
+
+cache:
+  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+
+composer:
+  stage: preparation
+  script:
+    - php -v
+    - ls -l
+    - cd src
+    - composer install --prefer-dist --no-ansi --no-interaction --no-progress --no-scripts
+    - cp .env.example .env
+    - php artisan key:generate
+    - ls -l
+  artifacts:
+    paths:
+      - src/vendor/
+      - src/.env
+    expire_in: 1 days
+    when: always
+  cache:
+    paths:
+      - src/vendor/
+
+#yarn:
+#  stage: preparation
+#  script:
+#    - yarn --version
+#    - yarn install --pure-lockfile
+#  artifacts:
+#    paths:
+#      - src/node_modules/
+#    expire_in: 1 days
+#    when: always
+#  cache:
+#    paths:
+#      - src/node_modules/
+
+#build-assets:
+#  stage: building
+#  # Download the artifacts for these jobs
+#  dependencies:
+#    - composer
+##    - yarn
+#  script:
+#    - cd src
+#    - yarn --version
+#    - yarn run production --progress false
+#  artifacts:
+#    paths:
+#      - src/public/css/
+#      - src/public/js/
+#      - src/public/fonts/
+#      - src/public/mix-manifest.json
+#    expire_in: 1 days
+#    when: always
+
+db-seeding:
+  stage: building
+  services:
+    - name: mysql:8.0
+      command: ["--default-authentication-plugin=mysql_native_password"]
+  # Download the artifacts for these jobs
+  dependencies:
+    - composer
+#    - yarn
+  script:
+    - cd src
+    - mysql --version
+    - php artisan migrate:fresh --seed
+    - mysqldump --host="${DB_HOST}" --user="root" --password="${MYSQL_ROOT_PASSWORD}" "${MYSQL_DATABASE}" > db.sql
+    - ls -l
+  artifacts:
+    paths:
+#      - src/storage/logs # for debugging
+      - src/db.sql
+    expire_in: 1 days
+    when: always
+
+phpunit:
+  stage: testing
+  services:
+    - name: mysql:8.0
+      command: ["--default-authentication-plugin=mysql_native_password"]
+  # Download the artifacts for these jobs
+  dependencies:
+#    - build-assets
+    - composer
+    - db-seeding
+  script:
+    - php -v
+    - sudo cp /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini /usr/local/etc/php/conf.d/docker-php-ext-xdebug.bak
+    - echo "" | sudo tee /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+    - ls -l
+    - cd src
+    - ls -l
+    - mysql --host="${DB_HOST}" --user="root" --password="${MYSQL_ROOT_PASSWORD}" "${MYSQL_DATABASE}" < db.sql
+    - ./vendor/phpunit/phpunit/phpunit --version
+    - php -d short_open_tag=off ./vendor/phpunit/phpunit/phpunit -v --colors=never --stderr
+    - sudo cp /usr/local/etc/php/conf.d/docker-php-ext-xdebug.bak /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
+  artifacts:
+    paths:
+#      - src/storage/logs # for debugging
+    expire_in: 1 days
+    when: on_failure
+
+#codestyle:
+#  stage: testing
+#  image: lorisleiva/laravel-docker
+#  script:
+#    - cd src
+#    - phpcs --extensions=php app
+#  dependencies: []
+
+phpcpd:
+  stage: testing
+  script:
+    - cd src
+    - test -f phpcpd.phar || curl -L https://phar.phpunit.de/phpcpd.phar -o phpcpd.phar
+    - php phpcpd.phar app/ --min-lines=50
+  dependencies: []
+  cache:
+    paths:
+      - phpcpd.phar
+
+sensiolabs:
+  stage: security
+  script:
+    - cd src
+    - ls -l
+    - test -d security-checker || git clone https://github.com/sensiolabs/security-checker.git
+    - cd security-checker
+    - ls -l
+    - composer install
+    - php security-checker security:check composer.lock
+  dependencies: []
+  cache:
+    paths:
+      - security-checker/

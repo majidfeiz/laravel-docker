@@ -1,0 +1,79 @@
+version: "3.7"
+services:
+  laravel_web:
+    build:
+      args:
+        user: sammy
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: laravel_web
+    container_name: laravel-web
+    restart: unless-stopped
+    working_dir: /var/www/src
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./:/var/www
+    networks:
+      - laravel_net
+
+  laravel_db:
+    image: mysql:5.7
+    container_name: laravel-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    volumes:
+      - ./docker-compose/mysql:/docker-entrypoint-initdb.d
+      - v_laravel_mysql:/var/lib/mysql
+
+    networks:
+      - laravel_net
+
+  laravel_nginx:
+    image: nginx:alpine
+    container_name: laravel-nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - laravel_net
+
+  laravel_redis:
+    image: redis
+    container_name: laravel-redis
+    volumes:
+    - v_laravel_redis:/data
+
+  laravel_phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: laravel-phpmyadmin
+    links:
+      - laravel_db
+    environment:
+      PMA_HOST: laravel_db
+      PMA_PORT: 3306
+      PMA_ARBITRARY: 1
+    restart: always
+    ports:
+      - 8080:80
+    networks:
+      - laravel_net
+
+
+networks:
+  laravel_net:
+    driver: bridge
+
+volumes:
+  v_laravel_redis:
+  v_laravel_mysql:
