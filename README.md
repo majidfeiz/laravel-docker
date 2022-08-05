@@ -1,4 +1,4 @@
-##Install laravel 8 in docker
+## Install laravel 8 in docker
 
 Clone repository on your system and run docker compose 
 ````
@@ -15,7 +15,7 @@ Open your laravel on port 80 for example localhost:80
 
 Note: you can change the ports on docker-compose.yml file
 
-##Laravel
+## Laravel
 
 If you need to write command on your laravel project follow this commands :
 
@@ -32,13 +32,13 @@ If you need go in container follow this command:
 docker exec -it laravel-web /bin/bash
 ````
 
-##Redis
+## Redis
 If you need go on redis cli follow this command :
 
 ````
 docker exec -it laravel-redis redis-cli
 ````
-##Mysql
+## Mysql
 If you need go in mysql follow this command :
 
 ````
