@@ -2,7 +2,7 @@
 
 Clone repository on your system and run docker compose 
 ````
-git clone https://github.com/sermajid/laravel-docker.git
+git clone https://github.com/majidfeiz/laravel-docker.git
 cd laravel
 git clone https://github.com/laravel/laravel.git src
 cp .env.example .env
