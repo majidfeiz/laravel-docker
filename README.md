@@ -25,10 +25,10 @@ Build a simple laravel development environment with mysql , redis by docker comp
 
 - [About](#about)
 - [Getting Started](#getting_started)
-- [Prerequisites](#Prerequisites)
+- [Prerequisites](#prerequisites)
 - [Usage](#usage)
 - [Built Using](#built_using)
-- [Contributing](../CONTRIBUTING.md)
+- [Contributing](https://github.com/majidfeiz/laravel-docker/contributors)
 - [Authors](#authors)
 
 ## 🧐 About <a name = "about"></a>
@@ -38,9 +38,9 @@ Build a simple laravel development environment with docker-compose. Compatible w
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
 
- See [Prerequisites](#Prerequisites) for notes on how to deploy the project on your system.
+ See [Prerequisites](#prerequisites) for notes on how to deploy the project on your system.
 
-### Prerequisites <a name = "Prerequisites"></a>
+### Prerequisites <a name = "prerequisites"></a>
 
 1. Install `docker` in your system.
 2. Clone the project `https://github.com/majidfeiz/laravel-docker.git`
@@ -60,9 +60,9 @@ Now you can start your laravel on your custom port for example [localhost:8080](
 
 Install docker in your system using below links :
 
-[MacOS](https://docs.docker.com/desktop/install/mac-install/)
-[Windows](https://docs.docker.com/desktop/install/windows-install/)
-[Linux](https://docs.docker.com/desktop/install/linux-install/)
+- [MacOS](https://docs.docker.com/desktop/install/mac-install/)
+- [Windows](https://docs.docker.com/desktop/install/windows-install/)
+- [Linux](https://docs.docker.com/desktop/install/linux-install/)
 
 
 
